@@ -1,0 +1,9 @@
+venv/
+.env
+data/raw/
+models/
+__pycache__/
+*.pyc
+*.npz
+*.pkl
+*.sql
