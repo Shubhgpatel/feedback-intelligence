@@ -1,12 +1,18 @@
 # Customer Feedback Intelligence System
 
-An end-to-end machine learning pipeline that ingests customer reviews, stores them in a relational database, applies NLP and sentiment analysis, and surfaces insights through an interactive web dashboard with a conversational AI interface.
+An end-to-end machine learning pipeline that ingests customer reviews, stores them in a relational database, applies NLP and sentiment analysis, and surfaces insights through an interactive web dashboard with a conversational AI interface. The entire project is containerised with Docker and deployed to the cloud.
 
 ---
 
 ## What it does
 
 The system takes raw customer reviews from the Amazon Fine Food Reviews dataset and runs them through a full data science pipeline. Reviews are cleaned and stored in MySQL, processed with NLP techniques to extract topics and sentiment, scored by a trained machine learning classifier, and made queryable through a LangChain agent that accepts plain English questions. The final output is a Streamlit dashboard where anyone can explore the data, ask questions, and view anomaly alerts without writing a single line of SQL.
+
+---
+
+## Live demo
+
+[https://feedback-intelligence-kkwqedustr3smaolx9wwkc.streamlit.app](https://feedback-intelligence-kkwqedustr3smaolx9wwkc.streamlit.app)
 
 ---
 
@@ -21,6 +27,7 @@ The system takes raw customer reviews from the Amazon Fine Food Reviews dataset 
 - **Groq API** — runs llama-3.1-8b-instant for fast, free LLM inference
 - **Streamlit** — interactive web dashboard
 - **Plotly** — charts and visualisations
+- **Docker** — containerisation for consistent, reproducible environments
 - **Railway** — cloud MySQL hosting
 - **Streamlit Cloud** — app deployment
 
@@ -38,9 +45,12 @@ feedback-intelligence/
 │   ├── train_model.py        # Sentiment classifier training
 │   ├── langchain_agent.py    # LangChain SQL agent
 │   └── anomaly.py            # IsolationForest anomaly detection
-├── models/                   # Saved .pkl model files
+├── models/                   # Saved .pkl model files (not committed)
 ├── data/
 │   └── raw/                  # Raw CSV files (not committed)
+├── Dockerfile                # Docker image blueprint
+├── docker-compose.yml        # Runs app + MySQL together
+├── .dockerignore             # Files excluded from Docker image
 ├── schema.sql                # MySQL table definitions
 ├── requirements.txt
 └── .env                      # Local environment variables (not committed)
@@ -89,7 +99,52 @@ Four-page Streamlit app: an overview dashboard with KPI cards and trend charts, 
 
 ---
 
-## Setup
+## Setup — Option A: Run with Docker (recommended)
+
+This is the fastest way to run the project locally with no environment setup required.
+
+**Prerequisites:** Docker Desktop installed and running.
+
+**1. Clone the repository**
+```bash
+git clone https://github.com/Shubhgpatel/feedback-intelligence.git
+cd feedback-intelligence
+```
+
+**2. Create a `.env` file**
+```
+MYSQL_HOST=your-mysql-host
+MYSQL_USER=your-mysql-user
+MYSQL_PASSWORD=your-mysql-password
+MYSQL_DB=your-database-name
+MYSQL_PORT=3306
+GROQ_API_KEY=your-groq-api-key
+```
+
+**3. Build the Docker image**
+```bash
+docker build -t feedback-app .
+```
+
+**4. Run the container**
+```bash
+docker run -p 8501:8501 --env-file .env --name feedback-app-container feedback-app
+```
+
+**5. Open the dashboard**
+```
+http://localhost:8501
+```
+
+**Everyday usage after the first run:**
+```bash
+docker start feedback-app-container   # start
+docker stop feedback-app-container    # stop
+```
+
+---
+
+## Setup — Option B: Run locally with Python
 
 **1. Clone the repository**
 ```bash
@@ -146,6 +201,34 @@ streamlit run app.py
 
 ---
 
+## Docker reference
+
+```bash
+# Build the image
+docker build -t feedback-app .
+
+# Run the container
+docker run -p 8501:8501 --env-file .env --name feedback-app-container feedback-app
+
+# Start and stop
+docker start feedback-app-container
+docker stop feedback-app-container
+
+# View logs
+docker logs feedback-app-container
+
+# Check running containers
+docker ps
+
+# Run pipeline scripts inside the container
+docker exec -it feedback-app-container python src/etl.py
+
+# Remove stopped containers
+docker container prune
+```
+
+---
+
 ## Model performance
 
 Trained on 50,000 reviews with SMOTE oversampling to correct class imbalance (77% positive, 15% negative, 8% neutral).
@@ -163,12 +246,12 @@ Logistic Regression was selected as the production model based on higher macro F
 
 The app is deployed on Streamlit Cloud with the MySQL database hosted on Railway. The LangChain agent uses the Groq API for LLM inference, which runs llama-3.1-8b-instant in the cloud and requires no local model setup.
 
-Live demo: https://feedback-intelligence-kkwqedustr3smaolx9wwkc.streamlit.app
+The Docker image is 0.83GB compressed and has been tested on Mac (ARM64). It should run on any platform that supports Docker.
 
 ---
 
 ## Notes
 
-The `.env` file, `data/raw/` folder, and all `.pkl` and `.npz` model files are excluded from version control. If you clone this repo you will need to re-run the full pipeline to regenerate the models, or download pre-trained models separately.
+The `.env` file, `data/raw/` folder, and all `.pkl` and `.npz` model files are excluded from version control. If you clone this repo you will need to re-run the full pipeline to regenerate the models, or connect to an existing MySQL database that already has the data populated.
 
 The LangChain agent occasionally generates imperfect SQL for complex aggregation queries when using smaller LLMs. Adding explicit SQL examples to the schema prompt in `langchain_agent.py` improves reliability for specific query patterns.
