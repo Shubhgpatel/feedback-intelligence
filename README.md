@@ -255,3 +255,4 @@ The Docker image is 0.83GB compressed and has been tested on Mac (ARM64). It sho
 The `.env` file, `data/raw/` folder, and all `.pkl` and `.npz` model files are excluded from version control. If you clone this repo you will need to re-run the full pipeline to regenerate the models, or connect to an existing MySQL database that already has the data populated.
 
 The LangChain agent occasionally generates imperfect SQL for complex aggregation queries when using smaller LLMs. Adding explicit SQL examples to the schema prompt in `langchain_agent.py` improves reliability for specific query patterns.
+
