@@ -1,0 +1,352 @@
+PROJECT WEEKLY WORK PLAN
+Customer Feedback Intelligence System
+Duration: 15 May 2026 to 25 June 2026 (6 Weeks)
+================================================================
+
+
+WEEK 1 — 15 May to 21 May 2026
+Project Setup and Data Ingestion
+----------------------------------------------------------------
+
+Focus:
+Get the project environment ready, download the dataset, and
+load raw data into MySQL. By the end of this week the database
+should be live with 50,000 reviews loaded.
+
+Day 1 — 15 May (Friday)
+  - Create project folder structure
+  - Set up Python virtual environment
+  - Install all dependencies (spaCy, scikit-learn, langchain, etc.)
+  - Download spaCy language model (en_core_web_sm)
+  - Create .env file and .gitignore
+
+Day 2-3 — 16-17 May (Weekend)
+  - Download Amazon Fine Food Reviews dataset from Kaggle
+  - Place Reviews.csv in data/raw/ folder
+  - Write schema.sql with all 4 tables in 3NF
+    (products, reviews, topics, predictions)
+  - Run schema.sql in phpMyAdmin to create tables
+
+Day 4-5 — 18-19 May (Monday-Tuesday)
+  - Write etl.py with Extract Transform Load logic
+  - Rename columns to match schema
+  - Map star ratings to sentiment labels (1-2=neg, 3=neu, 4-5=pos)
+  - Convert Unix timestamps to datetime
+  - Load 50,000 rows into MySQL using SQLAlchemy
+
+Day 6-7 — 20-21 May (Wednesday-Thursday)
+  - Verify row counts in phpMyAdmin
+  - Add indexes on sentiment_label, product_id, review_time
+  - Fix any ETL errors or null value issues
+  - Push initial project structure to GitHub
+
+Week 1 Deliverable:
+  MySQL database with 50,000 reviews loaded and verified.
+  GitHub repository with etl.py and schema.sql committed.
+
+
+================================================================
+
+
+WEEK 2 — 22 May to 28 May 2026
+NLP Preprocessing and Topic Modelling
+----------------------------------------------------------------
+
+Focus:
+Clean all 50,000 reviews using spaCy, build the TF-IDF matrix,
+train the LDA topic model, and write results back to MySQL.
+By the end of this week cleaned_text and topic_id should be
+populated for every review.
+
+Day 1-2 — 22-23 May (Friday-Saturday)
+  - Write text_cleaner.py
+  - Remove HTML tags, URLs, special characters
+  - Lowercase all text
+  - Run spaCy tokenisation, stopword removal, lemmatisation
+  - Test on 100 sample reviews before running full dataset
+
+Day 3-4 — 24-25 May (Sunday-Monday)
+  - Run text_cleaner.py on all 50,000 reviews
+  - Write cleaned_text back to MySQL reviews table
+  - Verify cleaned_text column is populated in phpMyAdmin
+
+Day 5-6 — 26-27 May (Tuesday-Wednesday)
+  - Write topic_model.py
+  - Build TF-IDF matrix (max_features=5000, ngram_range=(1,2))
+  - Train LDA model with 10 topics
+  - Print and review topic keywords to verify they make sense
+  - Save tfidf_vectorizer.pkl, tfidf_matrix.npz, lda_model.pkl
+
+Day 7 — 28 May (Thursday)
+  - Assign dominant topic_id to every review
+  - Write topic_id back to MySQL reviews table
+  - Insert 10 topic records into topics table
+  - Verify in phpMyAdmin that reviews.topic_id is filled
+
+Week 2 Deliverable:
+  reviews.cleaned_text and reviews.topic_id populated.
+  Three model files saved in models/ folder.
+  topics table has 10 rows with keywords.
+
+
+================================================================
+
+
+WEEK 3 — 29 May to 4 June 2026
+Machine Learning Model Training
+----------------------------------------------------------------
+
+Focus:
+Train the sentiment classifier, handle class imbalance with
+SMOTE, evaluate model performance, and save all predictions
+to MySQL. By the end of this week the predictions table should
+be fully populated with 50,000 rows.
+
+Day 1-2 — 29-30 May (Friday-Saturday)
+  - Write train_model.py
+  - Load cleaned_text and sentiment_label from MySQL
+  - Load TF-IDF matrix from tfidf_matrix.npz
+  - Split data 80/20 stratified by class
+
+Day 3 — 31 May (Sunday)
+  - Apply SMOTE oversampling to training set
+  - Train Logistic Regression classifier
+  - Train XGBoost classifier
+  - Evaluate both on test set (accuracy, macro F1, confusion matrix)
+
+Day 4 — 1 June (Monday)
+  - Compare results and select best model by macro F1
+  - Save best_model.pkl, logistic_regression.pkl, xgboost_model.pkl
+  - Analyse class-level F1 scores and document findings
+
+Day 5-6 — 2-3 June (Tuesday-Wednesday)
+  - Run inference on all 50,000 reviews
+  - Write sentiment_label and confidence to predictions table
+  - Verify predictions table in phpMyAdmin
+
+Day 7 — 4 June (Thursday)
+  - Review and document model performance metrics
+  - Commit train_model.py and models to GitHub
+  - Update README with model performance table
+
+Week 3 Deliverable:
+  Trained models saved in models/ folder.
+  predictions table populated with 50,000 rows.
+  Model accuracy 78%+ and macro F1 documented.
+
+
+================================================================
+
+
+WEEK 4 — 5 June to 11 June 2026
+LangChain SQL Agent and Anomaly Detection
+----------------------------------------------------------------
+
+Focus:
+Build the LangChain SQL agent that answers plain English
+questions and implement IsolationForest anomaly detection.
+By the end of this week both Phase 4B and 4C are complete.
+
+Day 1 — 5 June (Friday)
+  - Get Groq API key from console.groq.com
+  - Install langchain-groq package
+  - Write langchain_agent.py using create_sql_agent
+  - Connect SQLDatabase wrapper to MySQL
+
+Day 2-3 — 6-7 June (Saturday-Sunday)
+  - Test agent with basic questions:
+    "How many reviews are in the database?"
+    "What percentage of reviews are positive?"
+    "What are the top 3 topics?"
+  - Fix any SQL generation issues
+  - Verify agent returns real data not hallucinated answers
+
+Day 4 — 8 June (Monday)
+  - Write anomaly.py
+  - Load daily sentiment aggregates from MySQL
+  - Build feature matrix (total_reviews, neg_ratio, avg_stars, neg_count)
+
+Day 5 — 9 June (Tuesday)
+  - Train IsolationForest with contamination=0.05
+  - Detect anomalous days and print results
+  - Create daily_sentiment table in MySQL
+
+Day 6 — 10 June (Wednesday)
+  - Save daily aggregates and anomaly flags to daily_sentiment table
+  - Update predictions.anomaly_flag for reviews on anomalous dates
+  - Verify flagged predictions in phpMyAdmin
+
+Day 7 — 11 June (Thursday)
+  - Test end to end: ETL to LangChain to anomaly detection
+  - Commit langchain_agent.py and anomaly.py to GitHub
+  - Document LangChain agent usage in README
+
+Week 4 Deliverable:
+  LangChain SQL agent answering real questions correctly.
+  daily_sentiment table with 125 anomalous days flagged.
+  predictions.anomaly_flag updated.
+
+
+================================================================
+
+
+WEEK 5 — 12 June to 18 June 2026
+Streamlit Dashboard and Docker Containerisation
+----------------------------------------------------------------
+
+Focus:
+Build the complete 4-page Streamlit dashboard, containerise
+the application with Docker, and test everything locally.
+By the end of this week the app should run perfectly inside
+a Docker container.
+
+Day 1-2 — 12-13 June (Friday-Saturday)
+  - Write app.py with Streamlit
+  - Build Dashboard page:
+    KPI cards (total reviews, positive %, negative %, avg stars, anomalies)
+    Sentiment trend chart by month (Plotly line chart)
+    Sentiment split pie chart
+    Topic bar chart
+    Star rating distribution chart
+
+Day 3 — 14 June (Sunday)
+  - Build AI Analyst page:
+    Chat input connected to LangChain agent
+    Example question buttons
+    SQL query expander
+    Chat history with session state
+
+Day 4 — 15 June (Monday)
+  - Build Review Explorer page:
+    Filters for sentiment, star rating, search text
+    Review table with sentiment badges and confidence scores
+  - Build Anomaly Detection page:
+    Scatter plot of normal vs anomalous days
+    Top anomalous days table with colour gradient
+
+Day 5 — 16 June (Tuesday)
+  - Test all 4 pages locally with streamlit run app.py
+  - Fix any UI bugs or query errors
+  - Write Dockerfile and .dockerignore
+
+Day 6 — 17 June (Wednesday)
+  - Write docker-compose.yml
+  - Build Docker image: docker build -t feedback-app .
+  - Run container: docker run -p 8501:8501 --env-file .env feedback-app
+  - Verify app works inside Docker at http://localhost:8502
+
+Day 7 — 18 June (Thursday)
+  - Clean up stopped containers
+  - Test Docker container with Railway MySQL
+  - Commit Dockerfile, docker-compose.yml, app.py to GitHub
+
+Week 5 Deliverable:
+  4-page Streamlit dashboard running locally.
+  Docker image built (under 1GB).
+  Container running and connected to Railway MySQL.
+
+
+================================================================
+
+
+WEEK 6 — 19 June to 25 June 2026
+Cloud Deployment and Project Completion
+----------------------------------------------------------------
+
+Focus:
+Migrate MySQL to Railway cloud, deploy the app to Streamlit
+Cloud, complete all documentation, and finalise the project
+for portfolio presentation.
+
+Day 1 — 19 June (Friday)
+  - Create Railway account and provision MySQL service
+  - Get public networking credentials from Railway dashboard
+  - Export local MySQL data from phpMyAdmin as SQL dump
+
+Day 2 — 20 June (Saturday)
+  - Add XAMPP MySQL to Mac PATH
+  - Import SQL dump into Railway MySQL via terminal
+  - Verify all 5 tables and 50,000 rows in Railway dashboard
+
+Day 3 — 21 June (Sunday)
+  - Update .env with Railway MySQL credentials
+  - Replace Ollama with Groq API in langchain_agent.py
+  - Test app locally connected to Railway MySQL
+
+Day 4 — 22 June (Monday)
+  - Create GitHub repository if not already done
+  - Generate requirements.txt with pip freeze
+  - Push all code to GitHub
+
+Day 5 — 23 June (Tuesday)
+  - Deploy to Streamlit Cloud at share.streamlit.io
+  - Add secrets (MySQL credentials, Groq API key) in Advanced settings
+  - Verify live deployment works at public URL
+
+Day 6 — 24 June (Wednesday)
+  - Write final README.md with:
+    Project description
+    Both setup options (Docker and local Python)
+    Docker command reference
+    Model performance table
+    Deployment notes
+  - Write LinkedIn post for the project
+  - Update resume with project bullet points in LaTeX format
+
+Day 7 — 25 June (Thursday)
+  - Final end to end test of live Streamlit app
+  - Verify LangChain agent answers questions correctly on live URL
+  - Push final README and any last fixes to GitHub
+  - Project complete
+
+Week 6 Deliverable:
+  App live at public Streamlit Cloud URL.
+  Railway MySQL hosting all data.
+  README.md fully written with setup instructions.
+  Project fully complete and documented.
+
+
+================================================================
+
+
+SUMMARY TIMELINE
+----------------------------------------------------------------
+
+Week 1  |  15-21 May        |  Data Ingestion and MySQL Setup
+Week 2  |  22-28 May        |  NLP Preprocessing and Topic Modelling
+Week 3  |  29 May - 4 Jun   |  ML Model Training
+Week 4  |  5-11 Jun         |  LangChain Agent and Anomaly Detection
+Week 5  |  12-18 Jun        |  Streamlit Dashboard and Docker
+Week 6  |  19-25 Jun        |  Cloud Deployment and Documentation
+
+
+PHASE TO WEEK MAPPING
+----------------------------------------------------------------
+
+Phase 1 — Data Ingestion          →  Week 1
+Phase 2 — MySQL Data Warehouse    →  Week 1
+Phase 3 — NLP Preprocessing       →  Week 2
+Phase 4A — ML Model Training      →  Week 3
+Phase 4B — LangChain SQL Agent    →  Week 4
+Phase 4C — Anomaly Detection      →  Week 4
+Phase 5 — Streamlit Dashboard     →  Week 5
+Docker Containerisation           →  Week 5
+Cloud Deployment                  →  Week 6
+Documentation                     →  Week 6
+
+
+TOOLS AND ACCOUNTS NEEDED BEFORE STARTING
+----------------------------------------------------------------
+
+Kaggle account          → to download Amazon Reviews dataset
+GitHub account          → version control and hosting code
+Groq account            → free API key at console.groq.com
+Railway account         → free MySQL cloud hosting
+Streamlit Cloud account → free app deployment at share.streamlit.io
+Docker Desktop          → containerisation (download from docker.com)
+XAMPP                   → local MySQL during development
+
+
+================================================================
+End of Weekly Work Plan
+================================================================
