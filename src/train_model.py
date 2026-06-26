@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 # ── DB connection ─────────────────────────────────────────
 DB_USER     = os.getenv("MYSQL_USER", "root")
 DB_PASSWORD = os.getenv("MYSQL_PASSWORD", "")

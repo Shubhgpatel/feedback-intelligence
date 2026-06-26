@@ -266,3 +266,4 @@ if __name__ == "__main__":
 
     print("anomaly.py complete!")
     print("Anomaly flags saved to both daily_sentiment and predictions tables.")
+    

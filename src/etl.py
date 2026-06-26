@@ -155,3 +155,4 @@ if __name__ == "__main__":
         verify(conn)
 
     print("ETL complete! Your MySQL database is ready.")
+    
